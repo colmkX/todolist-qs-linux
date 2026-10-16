@@ -1,0 +1,22 @@
+# ---- 大体积中间产物，绝不入库 ----
+build/
+01-解包/
+02-分析/
+03-重建/
+二进制安装包/
+
+# ---- 打包中间产物 ----
+packaging/src
+packaging/pkg
+packaging/PKGBUILD.generated
+packaging/PKGBUILD.bak
+packaging/version.conf
+packaging/todo-list.png
+packaging/*.tar.zst
+packaging/*.pkg.tar.*
+
+# ---- 杂项 ----
+*.log
+*.tmp
+*.part
+.DS_Store

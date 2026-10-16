@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Todo清单
+Name[en]=Todo List
+GenericName=待办事项与时间管理
+Comment=Todo清单是一款强大的跨平台待办事项和时间管理应用
+Comment[en]=Cross-platform todo and time-management app (unofficial Linux build)
+Exec=/opt/todo-list/launch.sh %U
+Icon=todo-list
+Terminal=false
+Categories=Office;ProjectManagement;
+Keywords=todo;task;待办;清单;番茄;todo-list;
+StartupNotify=true
+StartupWMClass=Todo清单

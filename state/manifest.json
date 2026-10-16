@@ -1,0 +1,59 @@
+{
+  "product": "todo-list",
+  "version": "3.14.2",
+  "electronVersion": "43.4.0",
+  "installer": {
+    "name": "Todo清单 Setup 3.14.2.exe",
+    "sha256": "8538330a886b8b80fbc91a71c2139f8cbd36347ef1f547ba3ce5da3ef32f738b",
+    "bytes": 174035904
+  },
+  "app": {
+    "name": "todo-list",
+    "version": "3.14.2",
+    "description": "Todo清单是一款强大的跨平台待办事项和时间管理应用",
+    "main": "./background.js",
+    "dependencies": {
+      "better-sqlite3-multiple-ciphers": "13.0.3",
+      "electron-store": "^8.1.0",
+      "fortawesome": "git+https://gitee.com/yyz520/fortawesome.git",
+      "mime": "^3.0.0"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    }
+  },
+  "asar": {
+    "bytes": 290483523,
+    "entries": 59065
+  },
+  "nativePrebuilds": [
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/darwin-arm64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/darwin-x64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/linux-arm64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/linux-x64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/linuxmusl-arm64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/linuxmusl-x64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/win32-arm64.node",
+    "/node_modules/better-sqlite3-multiple-ciphers/prebuilds/win32-x64.node"
+  ],
+  "patchTargets": [
+    {
+      "path": "/background.js",
+      "size": 1675158,
+      "hasWin32Guard": false,
+      "alreadyPatched": false
+    },
+    {
+      "path": "/js/chunk-common.8f60109a.js",
+      "size": 278917,
+      "hasWin32Guard": true,
+      "alreadyPatched": false
+    },
+    {
+      "path": "/js/index.bc267cf0.js",
+      "size": 571685,
+      "hasWin32Guard": false,
+      "alreadyPatched": false
+    }
+  ]
+}

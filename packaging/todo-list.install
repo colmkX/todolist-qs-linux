@@ -1,0 +1,15 @@
+post_install() {
+  command -v update-desktop-database >/dev/null && update-desktop-database -q /usr/share/applications || true
+  command -v gtk-update-icon-cache   >/dev/null && gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+  echo ">>> 从应用菜单搜索「Todo清单」启动，或终端执行 todo-list"
+  echo ">>> 注意：关闭窗口是缩到托盘，应用继续运行。"
+  echo ">>>       彻底退出：托盘图标右键 → 退出，或 pkill -f todo-list"
+}
+
+post_upgrade() { post_install; }
+
+post_remove() {
+  command -v update-desktop-database >/dev/null && update-desktop-database -q /usr/share/applications || true
+  command -v gtk-update-icon-cache   >/dev/null && gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+  echo ">>> 用户数据保留在 ~/.config/todo-list（如需彻底清除请手动删除）"
+}

@@ -1,0 +1,68 @@
+# Maintainer: 本地自用，未在 AUR 发布
+#
+# Todo清单 的 Linux 构建 —— 由官方 Windows 安装包重托管而来，非官方发布。
+#
+# 打包要点（踩过的坑，勿改）：
+#   * options 必须含 '!strip'。makepkg 默认会 strip 二进制，而 Electron 主程序
+#     strip 后会损坏（Arch 官方 electron 包的 depends/options 也是这么写的）。
+#   * '!debug' 避免生成 debug 包（Electron 的调试符号没有意义且巨大）。
+#   * 装到 /opt 而不是 /usr/lib，因为整个目录是自包含的 Electron 运行时。
+#   * app.asar 是原版字节，仅由 scripts/patch.mjs 做过一处等长字节替换，
+#     详见 docs/补丁清单.md。
+
+pkgname=todo-list
+pkgver=@PKGVER@
+pkgrel=1
+pkgdesc="Todo清单 — 待办事项与时间管理（由官方 Windows 版重托管的 Linux 构建，非官方）"
+arch=('x86_64')
+url="https://todo.evestudio.cn/"
+license=('custom:proprietary')
+# 由以下命令实测得出（objdump -p 取 DT_NEEDED → pacman -Qoq 映射到包）：
+#   objdump -p todo-list | awk '/NEEDED/{print $2}' | sort -u
+depends=(
+  'alsa-lib' 'at-spi2-core' 'cairo' 'dbus' 'expat' 'glib2' 'glibc' 'gtk3'
+  'libcups' 'libgcc' 'libx11' 'libxcb' 'libxcomposite' 'libxdamage' 'libxext'
+  'libxfixes' 'libxkbcommon' 'libxrandr' 'mesa' 'nspr' 'nss' 'pango' 'systemd-libs'
+)
+optdepends=(
+  'libnotify: 桌面通知（到期提醒）'
+  'xdg-utils: 用系统默认程序打开外部链接'
+  'ttf-dejavu: 无中日韩字体时的兜底显示'
+)
+options=('!strip' '!debug')
+install=todo-list.install
+source=("todo-list-${pkgver}.tar.zst")
+sha256sums=('@SHA256@')
+
+package() {
+  # 整个自包含运行时
+  #
+  # 用 bsdtar 而不是 cp -a：在 fakeroot 环境下 cp -a 会尝试保留属主，
+  # 某些文件系统上直接 EINVAL 让 makepkg 中止。bsdtar + --no-same-owner
+  # 既能保留权限位（可执行位很关键），又不会碰属主。
+  install -d "$pkgdir/opt/todo-list"
+  bsdtar -C "$srcdir/todo-list-${pkgver}" -cf - . \
+    | bsdtar -C "$pkgdir/opt/todo-list" -xf - --no-same-owner
+
+  # 兜底确保关键文件可执行
+  chmod 755 "$pkgdir/opt/todo-list/todo-list" \
+            "$pkgdir/opt/todo-list/chrome-sandbox" \
+            "$pkgdir/opt/todo-list/chrome_crashpad_handler" 2>/dev/null || true
+
+  # 启动器（包装：日志 + 失败自动降级）
+  install -Dm755 "$startdir/todo-list.sh" "$pkgdir/opt/todo-list/launch.sh"
+
+  # 清理 Windows 专有残留（若上游打包脚本将来误带入）
+  rm -f "$pkgdir/opt/todo-list/resources/lib/showdesktop.node" \
+        "$pkgdir/opt/todo-list/resources/elevate.exe" 2>/dev/null || true
+
+  # 桌面项与图标
+  install -Dm644 "$startdir/todo-list.desktop" \
+    "$pkgdir/usr/share/applications/todo-list.desktop"
+  install -Dm644 "$startdir/todo-list.png" \
+    "$pkgdir/usr/share/icons/hicolor/256x256/apps/todo-list.png"
+
+  # 命令入口
+  install -d "$pkgdir/usr/bin"
+  ln -s /opt/todo-list/launch.sh "$pkgdir/usr/bin/todo-list"
+}
