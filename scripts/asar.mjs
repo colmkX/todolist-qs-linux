@@ -22,6 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 export function openAsar(asarPath) {
   const fd = fs.openSync(asarPath, 'r');
@@ -54,7 +55,16 @@ export function readEntry({ fd, dataStart }, entry) {
 }
 
 // ---------------- CLI ----------------
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// 判断是否为 CLI 直接调用。
+//
+// 不要写成 `import.meta.url === \`file://${process.argv[1]}\``：
+// import.meta.url 会对路径做百分号编码（本仓库路径含中文，会被编码成
+// %E6%B8%85%E5%8D%95…），而 argv[1] 是原始路径，两者永不相等 ——
+// 结果是脚本静默什么都不做、退出码还是 0（本仓库踩过这个坑）。
+// 正确做法是两边都转成真实文件系统路径再比较。
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const [, , cmd, asarPath, arg3, ...rest] = process.argv;
   if (!cmd || !asarPath) {

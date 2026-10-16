@@ -43,7 +43,12 @@ SHA="$(sha256 "$TARBALL")"
 # ---------- 2. 生成图标 ----------
 info "[2/4] 生成图标"
 node "$REPO/scripts/asar.mjs" cat "$SRC/resources/app.asar" icon.png > todo-list.png
-dim "    $(stat -c%s todo-list.png) 字节"
+ICON_BYTES="$(stat -c%s todo-list.png)"
+dim "    ${ICON_BYTES} 字节"
+# 必须校验：asar.mjs 曾因入口判断写错而静默空转，产出 0 字节图标却不报错，
+# 结果打出一个图标损坏的包。这里fail fast。
+[ "$ICON_BYTES" -gt 1000 ] || die "图标提取失败（只有 ${ICON_BYTES} 字节），拒绝继续打包"
+file -b todo-list.png | grep -q "PNG image" || die "图标不是有效 PNG：$(file -b todo-list.png)"
 
 # ---------- 3. 实例化 PKGBUILD ----------
 info "[3/4] 生成 PKGBUILD"

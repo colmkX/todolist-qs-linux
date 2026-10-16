@@ -38,7 +38,10 @@ node "$REPO/scripts/patch.mjs" "$DEST/resources/app.asar" || warn "补丁未全�
 info "[3/5] 安装图标"
 mkdir -p "$ICONS/256x256/apps"
 node "$REPO/scripts/asar.mjs" cat "$DEST/resources/app.asar" icon.png > "$ICONS/256x256/apps/todo-list.png"
-dim "    $(stat -c%s "$ICONS/256x256/apps/todo-list.png") 字节"
+ICON_BYTES="$(stat -c%s "$ICONS/256x256/apps/todo-list.png")"
+dim "    ${ICON_BYTES} 字节"
+# 图标提取曾因 asar.mjs 入口判断写错而静默产出 0 字节，必须拦住
+[ "$ICON_BYTES" -gt 1000 ] || die "图标提取失败（只有 ${ICON_BYTES} 字节）"
 
 info "[4/5] 安装启动器"
 cp -f "$REPO/packaging/todo-list.sh" "$DEST/launch.sh"

@@ -37,6 +37,8 @@ Windows 安装包 (.exe)
 | **不要给 `timeout` 的结果直接赋值** | `lib.sh` 开了 `set -e`，`timeout` 超时返回 124 是非零，会让脚本当场退出。用 `rc=0; timeout ... \|\| rc=$?` |
 | **`app.asar` 尽量只做等长替换** | 等长时只需改 26 个字节 + 更新头部哈希；变长则要重打包整个 290 MB 文件。`patch.mjs` 两者都支持，但等长更稳 |
 | **不要保留 Windows 专有文件** | `lib/showdesktop.node`、`elevate.exe`、`app-update.yml` 都不用带。`resources/public/` 必须带 |
+| **`.mjs` 判断"是否被直接调用"不要比较 `import.meta.url` 与 `` `file://${argv[1]}` ``** | `import.meta.url` 会对路径做**百分号编码**；本仓库路径含中文（`Todo清单逆向项目`），编码后与原始 `argv[1]` 永不相等 → 脚本**静默什么都不做、退出码还是 0**。本仓库因此产出过 0 字节的图标且不报错。正确写法：`path.resolve(argv[1]) === fileURLToPath(import.meta.url)` |
+| **提取出的资源要校验大小** | 上一条的后果是"静默产出空文件"。任何从 asar 提取的文件（图标等）都必须断言大小/类型，不能只信退出码 |
 
 ---
 
@@ -207,6 +209,7 @@ bsdtar -xOf packaging/todo-list-<版本>-1-x86_64.pkg.tar.zst \
 | `pkill` 把脚本自己杀了 | `pkill -f "<路径>"` 自匹配 | 用 `lib.sh:stop_app` |
 | makepkg：`cp: 无法保留...的所有权: 无效的参数` | fakeroot 下 `cp -a` 尝试保留属主 | 用 `bsdtar ... --no-same-owner`（已改） |
 | 打包后图标/任务栏不对 | `StartupWMClass` 不匹配 | 应用内 `app.setName("Todo清单")`，桌面项用 `StartupWMClass=Todo清单` |
+| **打包后图标空白 / 是 0 字节** | `asar.mjs` 入口判断写错导致**静默空转**，图标被写成空文件 | 已修（见铁律表）。自查：`node scripts/asar.mjs cat <asar> icon.png \| wc -c` 应 >1000。已加打包前校验 |
 | 再次点菜单图标"闪退" | 单实例锁：已有实例（在托盘） | 正常行为，不是 bug。托盘右键 → 打开 |
 | `GPU process exited unexpectedly: exit_code=139` | 无 `/dev/dri` 或 GPU 驱动问题 | 加 `--disable-gpu`（启动器已列备选） |
 | 提示 `APPIMAGE env is not defined` | 非 AppImage 运行 | **正常且期望**，更新器据此跳过 |
