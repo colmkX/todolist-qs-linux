@@ -20,3 +20,6 @@ packaging/*.pkg.tar.*
 *.tmp
 *.part
 .DS_Store
+
+# 截图预览临时文件
+docs/evidence/.*.png
